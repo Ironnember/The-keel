@@ -1,155 +1,200 @@
 # Keel 1.0 Boundary Recovery
 
-Status: proposed recovery doctrine. Historical Keel material is reference evidence, not canonical implementation.
+Status: **Proposed recovery doctrine. Not an implementation claim.**
+
+## Evidence basis
+
+This recovery is distilled from historical Keel material held outside this repository, including the Repository Constitution / Architecture documents and Keel Gateway OS + Pulpo planning material. Historical documents contain useful mechanics but also collapse routing, retrieval, authorization, orchestration, governance, execution, and evidence into one system. Those collapsed responsibilities are **not** carried forward as canonical design.
 
 ## Recovered purpose
 
 Keel is the deterministic execution substrate beneath Pulpo governance.
 
 ```text
-Intelligence
-    |
-    v
-Pulpo governance and authority
-    |
-    | exact bounded permit
-    v
-Keel deterministic execution
-    |
-    v
-External systems
-    |
-    v
+Intelligence / agents
+        |
+        v
+Pulpo governance and evidence plane
+  exact intent -> authority -> policy -> decision -> one-use permit
+        |
+        v
+Keel deterministic execution substrate
+  validate permit contract -> stage capability -> execute bounded effect
+  -> supervise state -> recover/rollback where possible -> report observation
+        |
+        v
+External systems / host / provider
+        |
+        v
 Independent evidence -> Pulpo reconciliation
 ```
 
 ## Constitutional separation
 
-Pulpo owns:
+`INTELLIGENCE != AUTHORITY`
 
-- identity/authority evaluation;
+`PULPO != EXECUTOR`
+
+`KEEL != AUTHORITY`
+
+`EXECUTION SAFETY != AUTHORIZATION`
+
+`VALID PAYLOAD != AUTHORIZED CONSEQUENCE`
+
+`KEEL REPORT != ACCEPTED CONSEQUENCE`
+
+`ROLLBACK != ERASE HISTORY`
+
+Keel may refuse execution for execution-safety reasons. It may never create, widen, repair, infer, or substitute Pulpo authority.
+
+## Pulpo owns
+
+- exact intent identity and object binding;
+- authenticated authority and human approval semantics;
 - policy and budget decision;
-- approval binding;
-- exact consequence authorization;
-- one-use permit semantics;
-- canonical governance evidence and reconciliation;
-- authority revocation and expiry.
+- permit issuance, expiry, revocation and one-use semantics;
+- canonical governance/audit evidence obligations;
+- reconciliation of executor reports against independent observation;
+- outcome learning and recommendations, without self-authority.
 
-Keel owns:
+## Keel owns
 
-- deterministic execution of an already-authorized exact operation;
-- execution adapters and provider connectivity;
-- process/runtime supervision;
-- health/readiness gates;
-- transactional state transition where the target permits it;
-- bounded retries only when Pulpo semantics permit them;
-- rollback/recovery mechanics where meaningful;
-- secret/provider credential custody needed only for execution;
-- resource limits, isolation, and execution telemetry;
-- execution receipts returned to Pulpo for reconciliation.
+- deterministic execution adapters;
+- host/runtime capability staging after a valid Pulpo permit is presented;
+- process supervision and bounded retries where the permit explicitly allows them;
+- readiness and health gates;
+- configuration/schema validation;
+- resource limits and execution containment;
+- provider/API translation required to perform the exact authorized object;
+- transactional state transition where the target supports it;
+- rollback/recovery where technically possible;
+- drift detection for execution-owned state;
+- execution receipts and sanitized observations returned to Pulpo;
+- secrets custody required solely for execution, inaccessible to proposing intelligence.
 
-Keel does **not** own:
+## Keel explicitly does not own
 
-- human or machine authority;
-- policy expansion;
-- approval authority;
-- a competing evidence ledger;
-- a competing learning/memory authority;
-- permission to broaden a Pulpo permit;
-- permission to reinterpret an exact target into a different consequence;
-- permission to retry a consequential operation after uncertain outcome unless the governing contract explicitly allows it.
+- an independent authority service;
+- a second policy engine that can authorize consequence;
+- a second canonical evidence ledger;
+- human approval semantics;
+- authority expansion based on local success, model confidence, identity, RBAC, retrieval, or memory;
+- autonomous substitution of target, action, budget, actor, provider consequence, or permit scope;
+- a general agent orchestrator that bypasses Pulpo consequence admission.
 
-## Recovered historical material
+## Historical material: retain, adapt, reject
 
-Historical Keel notebooks/documents describe useful infrastructure patterns including:
+### Retain / adapt
 
-- provider-agnostic gateway/proxy behavior;
-- payload normalization and provider adapters;
+Historical Keel documents contain useful execution mechanics:
+
+- provider-agnostic adapters and payload normalization;
+- async I/O and connection pooling;
 - circuit breakers and graceful degradation;
-- async execution and connection management;
-- multi-tenant credential isolation;
-- health-gated container startup;
-- telemetry and token/cost accounting;
-- resource supervision;
-- local/hybrid/sovereign deployment modes;
-- pre-flight resource/budget reservation concepts;
-- serialized long-horizon task suspension.
+- streaming/backpressure handling;
+- deterministic configuration and schema migrations;
+- health/readiness gates;
+- non-root container execution;
+- secrets isolation;
+- telemetry and cost measurement;
+- bounded resource controls;
+- state serialization for long waits;
+- tool/payload validation.
 
-These are candidate capabilities, not verified Keel 1.0 features.
+These are execution capabilities only. Each must remain subordinate to an exact Pulpo permit when the operation is consequential.
 
-Historical material also assigns governance, routing, RAG, moral-policy, budget authority, and audit truth to Keel/Pulpo inconsistently. Those responsibilities are **not** imported wholesale. Current Pulpo constitutional boundaries supersede them.
+### Reject / quarantine
 
-## Clean Keel 1.0 contract
+Do not revive historical concepts that would duplicate Pulpo or weaken current constitutional boundaries:
 
-Keel should initially accept only a normalized execution request derived from a Pulpo-issued permit:
+- Keel as a moral/governance authority;
+- Keel-side semantic intent authorization;
+- Keel-issued authority based on RBAC, virtual API keys, quotas, or model routing;
+- automatic provider substitution when substitution changes the authorized consequence;
+- a separate authoritative audit/evidence truth;
+- agent/tool orchestration that can cause consequence without Pulpo admission;
+- claims of guaranteed cost recovery, perfect safety, or production readiness without executable evidence.
 
-```json
-{
-  "permit_id": "opaque-id",
-  "intent_hash": "sha256:...",
-  "actor_id": "exact-actor",
-  "action": "exact-action",
-  "resource": "exact-resource",
-  "object_version": "exact-version",
-  "expires_at": "...",
-  "execution_profile": "sandbox-v0"
-}
+## Minimal Pulpo <-> Keel contract
+
+Keel accepts a normalized execution request containing at minimum:
+
+```text
+permit_id
+intent_hash
+actor_id
+exact_action
+exact_resource
+exact_object_hash
+issued_at
+expires_at
+attempt_budget
+pulpo_authority_profile
 ```
 
-Keel must validate the permit through the Pulpo-defined verification boundary before gaining a transmission right. Keel may not manufacture or expand any field.
+Keel must verify the contract through a pinned Pulpo verifier before capability staging. A valid signature alone is insufficient if the exact object, actor, expiry, revocation state, attempt budget, or execution profile does not match.
 
-Keel returns an execution receipt, not an authorization verdict:
+Keel returns a non-authoritative execution receipt containing at minimum:
 
-```json
-{
-  "permit_id": "opaque-id",
-  "attempt_id": "keel-attempt-id",
-  "attempted": true,
-  "provider_claim": "accepted|rejected|unknown",
-  "provider_reference": "sanitized-reference",
-  "started_at": "...",
-  "finished_at": "..."
-}
+```text
+permit_id
+attempt_id
+exact_object_hash
+started_at
+finished_at
+executor_identity
+transport_result
+provider_reference_if_any
+sanitized_observation
 ```
 
-A Keel receipt is evidence input. It is not proof that the consequence actually occurred. Pulpo reconciliation must compare it with independent observation where consequence semantics require that.
+Pulpo reconciles that receipt against independent evidence. Keel cannot mark its own consequence accepted or valuable.
 
-## V0 proof
+## Keel 1.0 smallest executable proof
 
-Do not rebuild the historical gateway.
+Do not rebuild the historical gateway first.
 
-Build one minimal Keel executor for one harmless sandbox effect and prove:
+Build one disposable sandbox executor with one action: create an inert local record.
 
-1. no Pulpo permit -> no execution;
-2. valid exact permit -> one bounded attempt;
-3. target substitution -> deny before provider transmission;
-4. actor substitution -> deny;
-5. expired/revoked permit -> deny;
-6. replayed permit -> no second effect;
-7. malformed execution object -> deny;
-8. Keel crash before transmission -> restart without inventing success;
-9. lost provider response -> unknown/reconciliation path, no blind consequential retry;
-10. provider success claim without independent observation -> not reconciled success;
-11. Keel cannot widen policy, budget, scope, credentials, or authority;
-12. execution receipt is returned to Pulpo's canonical evidence/reconciliation path rather than a second ledger.
+Frozen matrix:
 
-## Donovan / external OS comparison
+1. valid exact Pulpo permit + valid execution object -> one effect;
+2. no permit -> deny before capability staging;
+3. malformed/invalid permit -> deny;
+4. expired permit -> deny;
+5. revoked permit -> deny;
+6. actor substitution -> deny;
+7. resource/target substitution -> deny;
+8. payload mutation after authorization -> deny;
+9. replay spent permit -> deny;
+10. executor reports success but independent observer sees no effect -> Pulpo reconciliation mismatch;
+11. execution fails mid-transition -> deterministic failure/rollback evidence;
+12. restart -> spent/failed state cannot become executable again.
 
-A deterministic Agent Platform OS should be tested as a peer execution substrate, not as Pulpo authority.
+Then ablate Pulpo and Keel independently to prove the separation:
 
-Frozen comparison:
+- Pulpo without Keel: authorized but unsafe/unavailable execution must not become accepted consequence.
+- Keel without Pulpo: technically executable operation must not gain authority.
 
-- valid Pulpo authority + valid execution invariants -> exactly one effect;
-- invalid Pulpo authority + valid execution invariants -> no effect;
-- valid Pulpo authority + invalid execution invariants -> no effect or deterministic rollback;
-- invalid authority + invalid execution invariants -> no effect.
+## Relationship to external Agent Platform OS experiments
 
-Then test replay, actor substitution, target substitution, stale authority, partial execution, false `done`, and uncertain provider response.
+A third-party deterministic Agent Platform OS should be evaluated as a **Keel-class execution substrate**, not as Pulpo authority.
 
-This tests whether Keel and an external deterministic OS solve the same execution-plane problem while remaining subordinate to independent consequence authority.
+The comparison question is:
 
-## Nonclaims
+> Given the same frozen Pulpo permit contract, can Keel and an external deterministic OS independently enforce execution invariants without either system manufacturing authority?
 
-This document does not claim that historical Keel code exists, that historical architecture was secure, that the old notebooks are canonical, or that Keel 1.0 is implemented.
+That creates a clean cross-validation surface rather than a product-architecture collision.
 
-It freezes the recovered boundary so implementation can proceed without importing old architectural drift.
+## Admission rule
+
+This document recovers and narrows doctrine only. It does not authorize implementation, merge, deployment, credentials, external effects, or migration of historical Keel code.
+
+Before Keel becomes canonical again:
+
+1. inventory remaining historical Gemini / Notebook / Drive artifacts;
+2. classify each claim as Recorded, Verified, Inferred, Proposed, or Rejected;
+3. map useful mechanics against current Pulpo proofs so no responsibility is duplicated;
+4. implement only the minimal sandbox executor contract;
+5. prove success, denial, replay, restart, substitution, failure and reconciliation behavior;
+6. obtain independent exact-head review.

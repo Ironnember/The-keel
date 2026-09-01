@@ -18,5 +18,7 @@ async fn main() {
     let listener = TcpListener::bind("0.0.0.0:8080")
         .await
         .expect("bind retention listener");
-    axum::serve(listener, app).await.expect("serve retention api");
+    axum::serve(listener, app)
+        .await
+        .expect("serve retention api");
 }

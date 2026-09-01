@@ -32,11 +32,7 @@ fn fixture() -> (AppState, DeletionAuthorization) {
     (state, auth)
 }
 
-async fn post_json(
-    app: axum::Router,
-    uri: &str,
-    payload: Value,
-) -> axum::response::Response {
+async fn post_json(app: axum::Router, uri: &str, payload: Value) -> axum::response::Response {
     app.oneshot(
         Request::builder()
             .method("POST")
@@ -66,7 +62,10 @@ async fn valid_exact_deletion_removes_evidence_and_returns_nonreconciled_manifes
 
     assert_eq!(response.status(), StatusCode::OK);
     let body = json_body(response).await;
-    assert_eq!(body["custody_events"], json!(["DeletionRequested", "DeletionExecuted"]));
+    assert_eq!(
+        body["custody_events"],
+        json!(["DeletionRequested", "DeletionExecuted"])
+    );
     assert_eq!(body["reconciled"], false);
     assert_eq!(body["authority_effect"], "none");
     assert_eq!(body["merkle_root"].as_str().unwrap().len(), 64);

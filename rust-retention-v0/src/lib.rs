@@ -89,7 +89,7 @@ pub struct RetentionCheck {
     pub authority_effect: &'static str,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub struct DeletionManifest {
     pub manifest_id: String,
     pub permit_id: String,
@@ -266,9 +266,8 @@ async fn delete_evidence(
         request.authorization.object_hash
     );
     let deletion_executed_hash = sha256_hex(executed_event.as_bytes());
-    let merkle_root = sha256_hex(
-        format!("{}{}", deletion_requested_hash, deletion_executed_hash).as_bytes(),
-    );
+    let merkle_root =
+        sha256_hex(format!("{}{}", deletion_requested_hash, deletion_executed_hash).as_bytes());
     let manifest_id = format!("mnf_{}", &merkle_root[..16]);
 
     Ok(Json(DeletionManifest {

@@ -51,7 +51,8 @@ jobs:
                       if isinstance(node, ast.Import):
                           names = [alias.name.split(".")[0] for alias in node.names]
                       elif isinstance(node, ast.ImportFrom):
-                          names = [(node.module or "").split(".")[0]]
+                          # Relative imports are part of this package, not production dependencies.
+                          names = [] if node.level else [(node.module or "").split(".")[0]]
                       else:
                           continue
                       for name in names:

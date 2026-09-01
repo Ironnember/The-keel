@@ -1,0 +1,40 @@
+name: Rust Retention V0
+
+on:
+  push:
+    branches:
+      - experiment/rust-retention-executor-v0
+  pull_request:
+    paths:
+      - "rust-retention-v0/**"
+      - ".github/workflows/rust-retention-v0.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  rust-retention-v0:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact experiment head
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Check formatting
+        run: cargo fmt --manifest-path rust-retention-v0/Cargo.toml -- --check
+
+      - name: Compile
+        run: cargo check --manifest-path rust-retention-v0/Cargo.toml --all-targets
+
+      - name: Clippy
+        run: cargo clippy --manifest-path rust-retention-v0/Cargo.toml --all-targets -- -D warnings
+
+      - name: Run malicious-request negative proofs
+        run: cargo test --manifest-path rust-retention-v0/Cargo.toml --all-targets -- --nocapture

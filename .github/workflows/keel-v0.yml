@@ -1,0 +1,63 @@
+name: Keel V0 Boundary
+
+on:
+  pull_request:
+  push:
+    branches:
+      - recovery/keel1.0-boundary
+
+permissions:
+  contents: read
+
+jobs:
+  boundary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Compile source and tests
+        run: python -m compileall -q keel tests
+
+      - name: Run Keel V0 boundary proof
+        run: python -m unittest discover -s tests -v
+
+      - name: Assert no production dependencies are required
+        run: |
+          python - <<'PY'
+          import ast
+          from pathlib import Path
+
+          allowed = {
+              "__future__", "dataclasses", "enum", "hashlib", "json", "typing", "unittest", "keel"
+          }
+          roots = [Path("keel"), Path("tests")]
+          bad = []
+          for root in roots:
+              for path in root.rglob("*.py"):
+                  tree = ast.parse(path.read_text(encoding="utf-8"))
+                  for node in ast.walk(tree):
+                      if isinstance(node, ast.Import):
+                          names = [alias.name.split(".")[0] for alias in node.names]
+                      elif isinstance(node, ast.ImportFrom):
+                          # Relative imports are part of this package, not production dependencies.
+                          names = [] if node.level else [(node.module or "").split(".")[0]]
+                      else:
+                          continue
+                      for name in names:
+                          if name and name not in allowed:
+                              bad.append(f"{path}:{name}")
+          if bad:
+              raise SystemExit("unexpected dependency: " + ", ".join(sorted(set(bad))))
+          PY

@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout exact experiment head
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
